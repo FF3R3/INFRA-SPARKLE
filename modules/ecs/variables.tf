@@ -31,11 +31,11 @@ variable "secrets_arns" {
   type = list(string)
 }
 
+variable "execution_role_arn" {
+  type = string
+}
+
 variable "tags" {
   type    = map(string)
   default = { Project = "tesis-educacion" }
-}
-
-variable "execution_role_arn" {
-  type = string
 }
