@@ -5,12 +5,15 @@ resource "aws_ecs_task_definition" "vexa" {
   network_mode             = "awsvpc"
   cpu                      = "512"
   memory                   = "1024"
-  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+
+  # Rol de ejecución viene desde el entorno (main.tf)
+  execution_role_arn = var.execution_role_arn
+  # Si querés darle permisos adicionales al contenedor, podés agregar un task_role_arn distinto
 
   container_definitions = jsonencode([
     {
       name      = "vexa"
-      image     = "REEMPLAZAR-CON-TU-DOCKER-VEXA" # 👈 imagen en ECR o Docker Hub
+      image     = "REEMPLAZAR-CON-TU-DOCKER-VEXA" # 👈 Imagen en ECR o Docker Hub
       essential = true
       portMappings = [
         {
@@ -34,14 +37,14 @@ resource "aws_ecs_task_definition" "vexa" {
 # ECS Service para Vexa
 resource "aws_ecs_service" "vexa" {
   name            = "${var.name}-service"
-  cluster         = aws_ecs_cluster.this.id   # usa el mismo cluster que backend
-  execution_role_arn = var.execution_role_arn
+  cluster         = aws_ecs_cluster.this.id   # ⚠️ Usa el mismo cluster que backend
+  task_definition = aws_ecs_task_definition.vexa.arn
   desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = var.private_subnet_ids
-    assign_public_ip = true  # ⚠️ Learner Lab requiere IP pública para acceder
+    subnets          = var.private_subnet_ids
+    assign_public_ip = true  # ⚠️ En Learner Lab necesitás IP pública
   }
 
   load_balancer {

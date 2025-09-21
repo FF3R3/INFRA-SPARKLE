@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# INFRA-SPARKLE
-=======
 # Infraestructura Tesis - Entorno Prod
 
 Este entorno levanta la arquitectura mínima para el MVP:
@@ -27,4 +24,3 @@ Este entorno levanta la arquitectura mínima para el MVP:
      --key-schema AttributeName=LockID,KeyType=HASH \
      --billing-mode PAY_PER_REQUEST \
      --region us-east-1
->>>>>>> 22737a7 (infra terrafor)

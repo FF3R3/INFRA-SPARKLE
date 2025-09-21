@@ -2,7 +2,7 @@
 # IAM ROLE para ECS Tasks (compartido)
 # ==========================================
 resource "aws_iam_role" "ecs_task_execution" {
-  name = "ecs-task-exec-role"
+  name_prefix = "ecs-task-exec-"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
