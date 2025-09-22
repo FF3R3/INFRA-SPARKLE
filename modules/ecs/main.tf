@@ -70,7 +70,4 @@ resource "aws_ecs_service" "backend" {
   depends_on = [aws_ecs_task_definition.backend]
 }
 
-# Output para compartir el cluster con ecs_vexa
-output "cluster_id" {
-  value = aws_ecs_cluster.this.id
-}
+
