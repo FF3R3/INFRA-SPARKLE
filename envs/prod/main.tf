@@ -15,9 +15,9 @@ module "dynamodb" {
 }
 
 module "redis" {
-  source      = "../../modules/redis"
-  vpc_id      = module.network.vpc_id
-  subnet_ids  = module.network.private_subnet_ids
+  source     = "../../modules/redis"
+  vpc_id     = module.network.vpc_id
+  subnet_ids = module.network.private_subnet_ids
 }
 
 module "secrets" {
