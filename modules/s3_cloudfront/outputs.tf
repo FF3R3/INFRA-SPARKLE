@@ -1,7 +1,3 @@
-output "s3_bucket_name" {
-  value = aws_s3_bucket.frontend.bucket
-}
-
-output "cloudfront_domain_name" {
-  value = aws_cloudfront_distribution.frontend.domain_name
+output "frontend_website_url" {
+  value = aws_s3_bucket_website_configuration.frontend.website_endpoint
 }
