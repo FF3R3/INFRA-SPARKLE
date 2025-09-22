@@ -33,8 +33,3 @@ resource "aws_s3_bucket_policy" "frontend" {
     ]
   })
 }
-
-# Output con la URL del sitio web
-output "frontend_website_url" {
-  value = aws_s3_bucket_website_configuration.frontend.website_endpoint
-}
