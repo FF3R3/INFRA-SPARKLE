@@ -6,7 +6,7 @@ resource "aws_ecs_task_definition" "vexa" {
   cpu                      = "512"
   memory                   = "1024"
 
-  # Rol de ejecución viene desde el entorno (main.tf)
+  # Rol de ejecución (preexistente en Learner Lab, pasado como variable)
   execution_role_arn = var.execution_role_arn
   # Si querés darle permisos adicionales al contenedor, podés agregar un task_role_arn distinto
 
@@ -54,4 +54,13 @@ resource "aws_ecs_service" "vexa" {
   }
 
   depends_on = [aws_ecs_task_definition.vexa]
+}
+
+# Outputs útiles
+output "vexa_service_name" {
+  value = aws_ecs_service.vexa.name
+}
+
+output "vexa_task_definition" {
+  value = aws_ecs_task_definition.vexa.arn
 }

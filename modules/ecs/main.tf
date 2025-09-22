@@ -18,7 +18,7 @@ resource "aws_ecs_task_definition" "backend" {
   cpu                      = "512"
   memory                   = "1024"
 
-  # Rol de ejecución compartido (desde variable)
+  # Rol de ejecución (preexistente en Learner Lab)
   execution_role_arn = var.execution_role_arn
 
   container_definitions = jsonencode([
@@ -68,4 +68,9 @@ resource "aws_ecs_service" "backend" {
   }
 
   depends_on = [aws_ecs_task_definition.backend]
+}
+
+# Output para compartir el cluster con ecs_vexa
+output "cluster_id" {
+  value = aws_ecs_cluster.this.id
 }

@@ -12,21 +12,23 @@ resource "aws_internet_gateway" "igw" {
   tags   = merge(var.tags, { Name = "${var.name}-igw" })
 }
 
-# Subnet Pública
+# Subnets Públicas (mínimo 2 AZs)
 resource "aws_subnet" "public" {
+  count                   = length(var.public_subnet_cidrs)
   vpc_id                  = aws_vpc.this.id
-  cidr_block              = var.public_subnet_cidrs[0]
+  cidr_block              = var.public_subnet_cidrs[count.index]
   map_public_ip_on_launch = true
-  availability_zone       = var.azs[0]
-  tags = merge(var.tags, { Name = "${var.name}-public" })
+  availability_zone       = var.azs[count.index]
+  tags = merge(var.tags, { Name = "${var.name}-public-${count.index}" })
 }
 
-# Subnet Privada
+# Subnets Privadas (mínimo 2 AZs)
 resource "aws_subnet" "private" {
+  count             = length(var.private_subnet_cidrs)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = var.private_subnet_cidrs[0]
-  availability_zone = var.azs[0]
-  tags = merge(var.tags, { Name = "${var.name}-private" })
+  cidr_block        = var.private_subnet_cidrs[count.index]
+  availability_zone = var.azs[count.index]
+  tags = merge(var.tags, { Name = "${var.name}-private-${count.index}" })
 }
 
 # Elastic IP para NAT
@@ -35,10 +37,10 @@ resource "aws_eip" "nat" {
   tags   = merge(var.tags, { Name = "${var.name}-eip-nat" })
 }
 
-# NAT Gateway en la subnet pública
+# NAT Gateway en la primera subnet pública
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public.id
+  subnet_id     = aws_subnet.public[0].id
   tags          = merge(var.tags, { Name = "${var.name}-nat" })
   depends_on    = [aws_internet_gateway.igw]
 }
@@ -56,7 +58,8 @@ resource "aws_route" "public_inet" {
 }
 
 resource "aws_route_table_association" "public_assoc" {
-  subnet_id      = aws_subnet.public.id
+  count          = length(aws_subnet.public)
+  subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
 
@@ -73,7 +76,8 @@ resource "aws_route" "private_nat" {
 }
 
 resource "aws_route_table_association" "private_assoc" {
-  subnet_id      = aws_subnet.private.id
+  count          = length(aws_subnet.private)
+  subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
 }
 
@@ -109,27 +113,27 @@ resource "aws_security_group" "alb_sg" {
   tags = merge(var.tags, { Name = "${var.name}-alb-sg" })
 }
 
-# Application Load Balancer
+# Application Load Balancer (requiere mínimo 2 subnets)
 resource "aws_lb" "alb" {
   name               = "${var.name}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = [aws_subnet.public.id]
+  subnets            = aws_subnet.public[*].id
 
   tags = merge(var.tags, { Name = "${var.name}-alb" })
 }
 
-# Target Group para servicios ECS (puerto configurable)
+# Target Group para servicios ECS
 resource "aws_lb_target_group" "ecs_tg" {
   name        = "${var.name}-ecs-tg"
-  port        = 80   # Cambiar según backend (ej. 3000)
+  port        = 80   # cambiar según backend (ej. 3000)
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
   target_type = "ip"
 
   health_check {
-    path                = "/health" # cambiar si backend tiene otra ruta
+    path                = "/health"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
@@ -150,4 +154,25 @@ resource "aws_lb_listener" "http" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.ecs_tg.arn
   }
+}
+
+# Outputs para usar en otros módulos
+output "vpc_id" {
+  value = aws_vpc.this.id
+}
+
+output "public_subnet_ids" {
+  value = aws_subnet.public[*].id
+}
+
+output "private_subnet_ids" {
+  value = aws_subnet.private[*].id
+}
+
+output "alb_target_group_arn" {
+  value = aws_lb_target_group.ecs_tg.arn
+}
+
+output "alb_sg_id" {
+  value = aws_security_group.alb_sg.id
 }
