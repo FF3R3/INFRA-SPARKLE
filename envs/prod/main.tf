@@ -62,7 +62,9 @@ module "ecs_vexa" {
   private_subnet_ids  = [module.network.private_subnet_id]
   alb_target_group_arn= module.network.alb_target_group_arn
   execution_role_arn  = aws_iam_role.ecs_task_execution.arn
+  cluster_id          = module.ecs.cluster_id
 }
+
 
 module "s3_cloudfront" {
   source             = "../../modules/s3_cloudfront"

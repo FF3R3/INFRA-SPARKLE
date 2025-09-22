@@ -37,7 +37,7 @@ resource "aws_ecs_task_definition" "vexa" {
 # ECS Service para Vexa
 resource "aws_ecs_service" "vexa" {
   name            = "${var.name}-service"
-  cluster         = aws_ecs_cluster.this.id   # ⚠️ Usa el mismo cluster que backend
+  cluster         = var.cluster_id
   task_definition = aws_ecs_task_definition.vexa.arn
   desired_count   = 1
   launch_type     = "FARGATE"

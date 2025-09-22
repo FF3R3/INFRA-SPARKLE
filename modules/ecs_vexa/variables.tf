@@ -19,3 +19,7 @@ variable "tags" {
 variable "execution_role_arn" {
   type = string
 }
+
+variable "cluster_id" {
+  type = string
+}
