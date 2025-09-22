@@ -1,4 +1,4 @@
-# Task Definition para Vexa
+# Task Definition para Vexa (sin execution_role_arn en Learner Lab)
 resource "aws_ecs_task_definition" "vexa" {
   family                   = "${var.name}-td"
   requires_compatibilities = ["FARGATE"]
@@ -6,14 +6,10 @@ resource "aws_ecs_task_definition" "vexa" {
   cpu                      = "512"
   memory                   = "1024"
 
-  # Rol de ejecución (preexistente en Learner Lab, pasado como variable)
-  execution_role_arn = var.execution_role_arn
-  # Si querés darle permisos adicionales al contenedor, podés agregar un task_role_arn distinto
-
   container_definitions = jsonencode([
     {
       name      = "vexa"
-      image     = "REEMPLAZAR-CON-TU-DOCKER-VEXA" # 👈 Imagen en ECR o Docker Hub
+      image     = "REEMPLAZAR-CON-TU-DOCKER-VEXA"
       essential = true
       portMappings = [
         {
@@ -22,14 +18,6 @@ resource "aws_ecs_task_definition" "vexa" {
           protocol      = "tcp"
         }
       ]
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-group         = "/ecs/vexa"
-          awslogs-region        = "us-east-1"
-          awslogs-stream-prefix = "ecs"
-        }
-      }
     }
   ])
 }
@@ -44,7 +32,7 @@ resource "aws_ecs_service" "vexa" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    assign_public_ip = true  # ⚠️ En Learner Lab necesitás IP pública
+    assign_public_ip = true # necesario en Learner Lab
   }
 
   load_balancer {

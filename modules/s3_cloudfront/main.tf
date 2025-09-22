@@ -18,7 +18,7 @@ resource "aws_s3_bucket_website_configuration" "frontend" {
   }
 }
 
-# Política del bucket para permitir acceso público al contenido
+# Política pública para leer objetos
 resource "aws_s3_bucket_policy" "frontend" {
   bucket = aws_s3_bucket.frontend.id
   policy = jsonencode({

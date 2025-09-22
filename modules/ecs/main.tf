@@ -10,7 +10,7 @@ resource "aws_ecs_cluster" "this" {
   tags = var.tags
 }
 
-# Task Definition para Backend
+# Task Definition para Backend (sin execution_role_arn en Learner Lab)
 resource "aws_ecs_task_definition" "backend" {
   family                   = "${var.name}-backend"
   requires_compatibilities = ["FARGATE"]
@@ -18,13 +18,10 @@ resource "aws_ecs_task_definition" "backend" {
   cpu                      = "512"
   memory                   = "1024"
 
-  # Rol de ejecución (preexistente en Learner Lab)
-  execution_role_arn = var.execution_role_arn
-
   container_definitions = jsonencode([
     {
       name      = "backend"
-      image     = "REEMPLAZAR-CON-TU-DOCKER-BACKEND" # 👈 imagen en ECR o Docker Hub
+      image     = "REEMPLAZAR-CON-TU-DOCKER-BACKEND"
       essential = true
       portMappings = [
         {
@@ -36,14 +33,6 @@ resource "aws_ecs_task_definition" "backend" {
       environment = [
         { name = "REDIS_ENDPOINT", value = var.redis_endpoint }
       ]
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-group         = "/ecs/backend"
-          awslogs-region        = "us-east-1"
-          awslogs-stream-prefix = "ecs"
-        }
-      }
     }
   ])
 }
@@ -58,7 +47,7 @@ resource "aws_ecs_service" "backend" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    assign_public_ip = true # ⚠️ necesario en Learner Lab
+    assign_public_ip = true # necesario en Learner Lab
   }
 
   load_balancer {
@@ -70,4 +59,7 @@ resource "aws_ecs_service" "backend" {
   depends_on = [aws_ecs_task_definition.backend]
 }
 
-
+# Output para compartir el cluster con ecs_vexa
+output "cluster_id" {
+  value = aws_ecs_cluster.this.id
+}
